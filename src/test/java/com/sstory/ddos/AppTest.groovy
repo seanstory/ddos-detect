@@ -34,6 +34,11 @@ class AppTest extends Specification {
 
         when:
         App.main([sampleFile, kafkaUrl, kafkaTopic, output, checkpoint, limit] as String[])
+        def suspiciousIps = [] as Set<String>
+        outputDir.listFiles().each{ dir ->
+            dir.listFiles().findAll{it.name.startsWith("part")}.each{suspiciousIps.addAll(it.readLines())}
+        }
+        println "in total, detected ${suspiciousIps.size()} suspicious IPs"
 
         then:
         noExceptionThrown()

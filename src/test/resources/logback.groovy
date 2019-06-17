@@ -12,5 +12,7 @@ appender("CONSOLE", ConsoleAppender) {
 logger("org.apache.spark.streaming", WARN)
 logger("org.apache.spark.rdd", WARN)
 logger("org.apache.spark.storage", WARN)
+logger("org.apache.spark.scheduler", WARN)
+logger("org.apache.kafka.clients.consumer.ConsumerConfig", WARN)
 
 root(INFO, ["CONSOLE"])

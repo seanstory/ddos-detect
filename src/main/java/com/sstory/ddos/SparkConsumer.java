@@ -45,6 +45,7 @@ public class SparkConsumer {
     public SparkConsumer(String checkpointDir) {
         conf = new SparkConf().setMaster(MASTER_MODE).setAppName(APP_NAME);
         conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+        conf.set("spark.streaming.kafka.consumer.cache.enabled", "false");
         jssc = new JavaStreamingContext(conf, Durations.seconds(WINDOW_DURATION_SECONDS));
         jssc.checkpoint(checkpointDir);
         jssc.sparkContext().hadoopConfiguration().set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false");
