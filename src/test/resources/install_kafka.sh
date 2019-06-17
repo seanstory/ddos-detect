@@ -17,40 +17,29 @@ else
     mkdir ${INSTALL_DIR} && cd ${INSTALL_DIR}
 fi
 
-echo "start zookeeper? (y/n)"
-read start_choice
 
-if [[ ${start_choice} == 'y' ]]; then
-  START_ZOOKEEPER=true
-  echo "zookeeper will be started after installation"
-fi
+echo "zookeeper will be started after installation"
+echo "kafka will be started after installation"
 
-echo "start kafka? (y/n)"
-read start_choice
-
-if [[ ${start_choice} == 'y' ]]; then
-  START_KAFKA=true
-  echo "kafka will be started after installation"
-fi
 
 echo "downloading kafka"
-wget http://apache.mirrors.ionfish.org/kafka/2.2.0/kafka_2.12-2.2.0.tgz
+wget https://archive.apache.org/dist/kafka/0.10.2.2/kafka_2.11-0.10.2.2.tgz
 
 echo "unpacking kafka"
-tar -xzf kafka_2.12-2.2.0.tgz
+tar -xzf kafka_2.11-0.10.2.2.tgz
 
-cd kafka_2.12-2.2.0
+cd kafka_2.11-0.10.2.2
 
-if [[ ${START_ZOOKEEPER} == true ]]; then
-  echo "starting zookeeper"
-  touch zookeeper.log
-  ./bin/zookeeper-server-start.sh config/zookeeper.properties 2>&1 > zookeeper.log & echo "zookeeper started with pid: $!" &
-fi
 
-if [[ ${START_KAFKA} == true ]]; then
-  echo "starting kafka"
-  touch kafka.log
-  ./bin/kafka-server-start.sh config/server.properties 2>&1 > kafka.log & echo "kafka started with pid: $!" &
-fi
+echo "starting zookeeper"
+touch zookeeper.log
+./bin/zookeeper-server-start.sh config/zookeeper.properties 2>&1 > zookeeper.log & echo "zookeeper started with pid: $!" &
+
+sleep 5s
+
+echo "starting kafka"
+touch kafka.log
+./bin/kafka-server-start.sh config/server.properties 2>&1 > kafka.log & echo "kafka started with pid: $!" &
+
 
 exit

@@ -28,7 +28,7 @@ class FileProducer {
         BufferedReader reader = file.newReader("UTF-8")
         int lineNum = 0
         reader.eachLine { line ->
-            log.trace("Sending line number $lineNum")
+            log.debug("Sending line number {} to kafka topic: {}", lineNum, topic)
             producer.send(new ProducerRecord<>(topic, lineNum, line)).get()
             lineNum++
         }

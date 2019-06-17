@@ -11,14 +11,34 @@ To run this test, follow the instructions in the readme to start a local kafka. 
 @Ignore
 class AppTest extends Specification {
 
-    def "is it working?"(){
+    def "test a local example"(){
         setup:
         def sampleFile = "src/test/resources/data/apapche-access-log.txt"
         def kafkaUrl = "localhost:9092"
         def kafkaTopic = "test"
+        def output = "target/output"
+        def checkpoint = "target/checkpoint"
+        def limit = 40
+
+        def outputDir = new File(output)
+        if(outputDir.exists()){
+            outputDir.deleteDir()
+        }
+        outputDir.mkdirs()
+
+        def checkpointDir = new File(checkpoint)
+        if(checkpointDir.exists()){
+            checkpointDir.deleteDir()
+        }
+        checkpointDir.mkdirs()
 
         when:
-        App.main([sampleFile, kafkaUrl, kafkaTopic] as String[])
+        App.main([sampleFile, kafkaUrl, kafkaTopic, output, checkpoint, limit] as String[])
+        def suspiciousIps = [] as Set<String>
+        outputDir.listFiles().each{ dir ->
+            dir.listFiles().findAll{it.name.startsWith("part")}.each{suspiciousIps.addAll(it.readLines())}
+        }
+        println "in total, detected ${suspiciousIps.size()} suspicious IPs"
 
         then:
         noExceptionThrown()
