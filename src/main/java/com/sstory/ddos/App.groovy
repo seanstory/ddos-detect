@@ -27,7 +27,7 @@ class App
         log.info("Setting up Spark workflows")
         def consumer = new SparkConsumer(checkpointDir.absolutePath)
         def input = consumer.getStreamFromKafka(kafkaUrl, kafkaTopic)
-        consumer.consume(input, new IndividualIPLimitStrategy(limit), new File(outputDir, "out").absolutePath)
+        consumer.consume(input, new WindowedIPLimitStrategy(limit), new File(outputDir, "out").absolutePath)
         log.info("Starting the consumer")
         consumer.start()
 

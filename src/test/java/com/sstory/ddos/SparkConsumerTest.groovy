@@ -55,7 +55,7 @@ class SparkConsumerTest extends Specification {
         when:
         consumer.consume(pairDStream, new IndividualIPLimitStrategy(2), new File(outputDir, "out").absolutePath)
         consumer.jssc.start()
-        consumer.jssc.awaitTerminationOrTimeout(2_000) //just to show it's running
+        consumer.jssc.awaitTerminationOrTimeout(6_000) //just to show it's running
 
         then:
         outputDir.exists()
