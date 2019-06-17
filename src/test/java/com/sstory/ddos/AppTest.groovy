@@ -11,7 +11,7 @@ To run this test, follow the instructions in the readme to start a local kafka. 
 @Ignore
 class AppTest extends Specification {
 
-    def "is it working?"(){
+    def "test a local example"(){
         setup:
         def sampleFile = "src/test/resources/data/apapche-access-log.txt"
         def kafkaUrl = "localhost:9092"

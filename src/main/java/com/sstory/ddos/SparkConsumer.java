@@ -30,7 +30,7 @@ public class SparkConsumer {
     private static Logger log = LoggerFactory.getLogger(SparkConsumer.class);
     private static String MASTER_MODE = "local[*]";
     private static String APP_NAME = "DDOS-Detect";
-    private static int WINDOW_DURATION_SECONDS = 1;
+    private static int WINDOW_DURATION_SECONDS = 3;
     private static Pattern LOG_REGEX = Pattern.compile("([\\d\\.]+) - - \\[(.*?)\\] \"(.*?)\" (\\d+) (\\d+) \"-\" \"(.*?)\"");
     private static DateTimeFormatter TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z");
     private static int IP_INDEX = 1;
@@ -79,6 +79,10 @@ public class SparkConsumer {
 
     public void await() throws InterruptedException {
         jssc.awaitTermination();
+    }
+
+    public void stop(){
+        jssc.stop();
     }
 
 

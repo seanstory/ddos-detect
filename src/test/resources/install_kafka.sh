@@ -35,7 +35,7 @@ echo "starting zookeeper"
 touch zookeeper.log
 ./bin/zookeeper-server-start.sh config/zookeeper.properties 2>&1 > zookeeper.log & echo "zookeeper started with pid: $!" &
 
-sleep 2s
+sleep 5s
 
 echo "starting kafka"
 touch kafka.log

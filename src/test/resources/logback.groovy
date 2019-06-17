@@ -9,6 +9,8 @@ appender("CONSOLE", ConsoleAppender) {
     }
 }
 
-logger("com.sstory.ddos.FileProducer", TRACE)
+logger("org.apache.spark.streaming", WARN)
+logger("org.apache.spark.rdd", WARN)
+logger("org.apache.spark.storage", WARN)
 
 root(INFO, ["CONSOLE"])

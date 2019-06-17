@@ -10,6 +10,7 @@ class App
 {
     static void main( String[] args )
     {
+        log.info("Parsing args: {}", args)
         if(args.length != 6){
             throw new IllegalArgumentException("Expected args: <inputLogFile> <kafkaUrl> <kafkaTopic> <outputDir> <checkpointDir> <limit>")
         }
@@ -23,16 +24,18 @@ class App
             throw new IllegalStateException("Expected '${logFile}' to exist, be a single file, and be readable!")
         }
 
-        // get spark reading from Kafka
+        log.info("Setting up Spark workflows")
         def consumer = new SparkConsumer(checkpointDir.absolutePath)
         def input = consumer.getStreamFromKafka(kafkaUrl, kafkaTopic)
         consumer.consume(input, new IndividualIPLimitStrategy(limit), new File(outputDir, "out").absolutePath)
+        log.info("Starting the consumer")
         consumer.start()
 
-        // start throwing stuff into kafka.
+        log.info("Initializing the producer")
         FileProducer producer = new FileProducer(kafkaUrl, kafkaTopic)
         producer.produceFrom(logFile)
 
-        consumer.await() // will just wait until stopped
+        sleep(5_000) //finish retrieving from kafka. In a real scenario, this would be long-lived
+        consumer.stop()
     }
 }

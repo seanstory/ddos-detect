@@ -21,13 +21,22 @@ public class IndividualIPLimitStrategy implements DdosDetectionStrategy, Seriali
     @Override
     public JavaDStream<String> detectDdos(JavaDStream<SparkConsumer.LogEvent> logEvents) {
         JavaPairDStream<String, Long> countsByIpAddress = logEvents.map(logEvent -> {
-            logger.info("Saw IP: '{}' for log event: '{}'", logEvent.getIpAddress(), logEvent);
+            logger.trace("Saw IP: '{}' for log event: '{}'", logEvent.getIpAddress(), logEvent);
             return logEvent.getIpAddress();
         }).countByValue();
         JavaPairDStream<String, Long> runningCounts = countsByIpAddress.updateStateByKey((values, state) ->
             Optional.of(values.stream().mapToLong(i -> i).sum() + (state.isPresent() ? state.get() : 0L)));
-        return runningCounts.filter(pair -> pair._2 > maxRequestsAllowed).map(pair -> {
-            logger.info("Detected '{}' may be a suspicious IP", pair._1);
+        JavaPairDStream<String, Long> filtered = runningCounts.filter(pair -> pair._2 > maxRequestsAllowed);
+
+        filtered.persist();
+        filtered.foreachRDD(rdd -> {
+            if(rdd.isEmpty()){
+                logger.info("No DDOS threat detected... yet");
+            }
+        });
+
+        return filtered.map(pair -> {
+            logger.warn("Detected '{}' may be a suspicious IP, with {} requests so far", pair._1, pair._2);
             return pair._1;
         });
     }
