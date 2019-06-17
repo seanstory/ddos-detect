@@ -6,6 +6,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.streaming.Durations;
+import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
@@ -41,10 +42,12 @@ public class SparkConsumer {
     private SparkConf conf;
     private JavaStreamingContext jssc;
 
-    public SparkConsumer() {
+    public SparkConsumer(String checkpointDir) {
         conf = new SparkConf().setMaster(MASTER_MODE).setAppName(APP_NAME);
         conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
         jssc = new JavaStreamingContext(conf, Durations.seconds(WINDOW_DURATION_SECONDS));
+        jssc.checkpoint(checkpointDir);
+        jssc.sparkContext().hadoopConfiguration().set("mapreduce.fileoutputcommitter.marksuccessfuljobs", "false");
     }
 
     //TODO this still needs to be integrated.
@@ -61,11 +64,13 @@ public class SparkConsumer {
         return stream.mapToPair( record -> new Tuple2<>(record.key(), record.value()));
     }
 
-    public void consume(JavaPairDStream<Integer, String> inputStream) {
+    public void consume(JavaPairDStream<Integer, String> inputStream, DdosDetectionStrategy ddosDetectionStrategy, String outputDir) {
         JavaPairDStream<Integer, LogEvent> eventStream = inputStream.mapValues(new ConvertLogLineFunction());
-        eventStream.foreachRDD((rdd, time) -> log.info("Sub-rdd size is: {}", rdd.count())); //Todo, remove this - just for debugging right now
+        JavaDStream<LogEvent> logEvents = eventStream.map(tuple -> tuple._2);
 
-        //TODO... what next?
+        JavaDStream<String> suspiciousIPs = ddosDetectionStrategy.detectDdos(logEvents);
+
+        suspiciousIPs.dstream().saveAsTextFiles(outputDir, "out");
     }
 
 
@@ -131,6 +136,16 @@ public class SparkConsumer {
 
         public String getUserAgent() {
             return userAgent;
+        }
+
+        @Override
+        public String toString(){
+            return "IP: "+ipAddress +"\n" +
+                    "timestamp: "+timestamp+"\n" +
+                    "method: "+method+"\n" +
+                    "responseCode: "+responseCode+"\n" +
+                    "responseSize: "+responseSize+"\n" +
+                    "userAgent: "+userAgent;
         }
 
     }
