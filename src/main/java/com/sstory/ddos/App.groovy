@@ -10,19 +10,29 @@ class App
 {
     static void main( String[] args )
     {
-        if(args.length != 3){
-            throw new IllegalArgumentException("Expected args: <inputLogFile> <kafkaUrl> <kafkaTopic>")
+        if(args.length != 6){
+            throw new IllegalArgumentException("Expected args: <inputLogFile> <kafkaUrl> <kafkaTopic> <outputDir> <checkpointDir> <limit>")
         }
         File logFile = new File(args[0])
         String kafkaUrl = args[1]
         String kafkaTopic = args[2]
+        File outputDir = new File(args[3])
+        File checkpointDir = new File(args[4])
+        Long limit = Long.valueOf(args[5])
         if(!logFile.exists() || !logFile.isFile() || !logFile.canRead()){
             throw new IllegalStateException("Expected '${logFile}' to exist, be a single file, and be readable!")
         }
+
+        // get spark reading from Kafka
+        def consumer = new SparkConsumer(checkpointDir.absolutePath)
+        def input = consumer.getStreamFromKafka(kafkaUrl, kafkaTopic)
+        consumer.consume(input, new IndividualIPLimitStrategy(limit), new File(outputDir, "out").absolutePath)
+        consumer.start()
+
+        // start throwing stuff into kafka.
         FileProducer producer = new FileProducer(kafkaUrl, kafkaTopic)
         producer.produceFrom(logFile)
 
-        //TODO finish
-
+        consumer.await() // will just wait until stopped
     }
 }

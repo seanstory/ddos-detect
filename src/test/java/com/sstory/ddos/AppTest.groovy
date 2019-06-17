@@ -16,9 +16,24 @@ class AppTest extends Specification {
         def sampleFile = "src/test/resources/data/apapche-access-log.txt"
         def kafkaUrl = "localhost:9092"
         def kafkaTopic = "test"
+        def output = "target/output"
+        def checkpoint = "target/checkpoint"
+        def limit = 40
+
+        def outputDir = new File(output)
+        if(outputDir.exists()){
+            outputDir.deleteDir()
+        }
+        outputDir.mkdirs()
+
+        def checkpointDir = new File(checkpoint)
+        if(checkpointDir.exists()){
+            checkpointDir.deleteDir()
+        }
+        checkpointDir.mkdirs()
 
         when:
-        App.main([sampleFile, kafkaUrl, kafkaTopic] as String[])
+        App.main([sampleFile, kafkaUrl, kafkaTopic, output, checkpoint, limit] as String[])
 
         then:
         noExceptionThrown()

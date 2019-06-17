@@ -73,6 +73,14 @@ public class SparkConsumer {
         suspiciousIPs.dstream().saveAsTextFiles(outputDir, "out");
     }
 
+    public void start(){
+        jssc.start();
+    }
+
+    public void await() throws InterruptedException {
+        jssc.awaitTermination();
+    }
+
 
     public static class ConvertLogLineFunction implements Function<String, LogEvent> {
         @Override
