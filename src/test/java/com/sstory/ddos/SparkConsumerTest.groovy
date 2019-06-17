@@ -48,13 +48,13 @@ class SparkConsumerTest extends Specification {
         ])
 
         def queue = [] as Queue
+        queue.add(rdd)
         def dstream = consumer.jssc.queueStream(queue, true)
         def pairDStream = dstream.mapToPair(new SamplePairFunction())
 
         when:
         consumer.consume(pairDStream, new IndividualIPLimitStrategy(2), new File(outputDir, "out").absolutePath)
         consumer.jssc.start()
-        queue.add(rdd)
         consumer.jssc.awaitTerminationOrTimeout(2_000) //just to show it's running
 
         then:
